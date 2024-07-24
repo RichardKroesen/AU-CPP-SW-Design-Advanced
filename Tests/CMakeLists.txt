@@ -10,7 +10,7 @@ FetchContent_Declare(
 )
 FetchContent_MakeAvailable(googletest)
 
-# TEST 1 - Find Seven
+# TEST 1 - Test the function
 set(TEST1 find_seven_test)
 add_executable(${TEST1} 
     exercise_tests.cpp
@@ -22,3 +22,16 @@ target_link_libraries(${TEST1} PRIVATE
 )
 
 add_test(NAME ${TEST1} COMMAND find_seven_test)
+
+# TEST 2 - Measure the Performance
+set(TEST2 performance_test)
+add_executable(${TEST2} 
+    performance_test.cpp
+)
+
+target_link_libraries(${TEST2} PRIVATE
+    gtest_main
+    gmock_main
+)
+
+add_test(NAME ${TEST2} COMMAND performance_test)
