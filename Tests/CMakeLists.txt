@@ -13,7 +13,7 @@ FetchContent_MakeAvailable(googletest)
 # TEST 1 - Find Seven
 set(TEST1 find_seven_test)
 add_executable(${TEST1} 
-    find_seven.cpp
+    exercise_tests.cpp
 )
 
 target_link_libraries(${TEST1} PRIVATE
