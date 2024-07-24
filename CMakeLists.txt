@@ -1,11 +1,14 @@
-cmake_minimum_required(VERSION 3.10)
+cmake_minimum_required(VERSION 3.18 FATAL_ERROR)
 
-project(TOOLCHAIN_EXERCISE VERSION 1.0)
+project(MICRO_BENCH)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED True)
 
-set(CMAKE_C_COMPILER "C:/MinGW/bin/gcc.exe")
-set(CMAKE_CXX_COMPILER "C:/MinGW/bin/g++.exe")
+# On My System I have to set the compiler path: 
+set(CMAKE_C_COMPILER "C:/msys64/mingw64/bin/gcc.exe")
+set(CMAKE_CXX_COMPILER "C:/msys64/mingw64/bin/g++.exe")
 
-add_executable(TOOLCHAIN_EXERCISE main.cpp)
+add_executable(MICRO_BENCH main.cpp)
+
+add_subdirectory(tests)
