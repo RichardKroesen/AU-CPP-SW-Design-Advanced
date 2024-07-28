@@ -25,9 +25,8 @@ public:
     }
 
     template <size_t NumTasks = 4>
-    std::vector<T*> findAll(const T& key) {
+    auto findAll(const T& key) {
         std::vector<T*> results;
-        std::atomic<bool> solutionFound{false};
         std::mutex resultsMutex;
 
         std::vector<std::thread> threads;
@@ -36,15 +35,15 @@ public:
         size_t chunkSize = arr.size() / NumTasks;
         size_t remainder = arr.size() % NumTasks;
 
-        auto searchTask = [this, &key, &results, &solutionFound, &resultsMutex](size_t start, size_t end) {
-            for (size_t i = start; i < end && !solutionFound.load(); ++i) {
+        auto searchTask = [this, &key, &results, &resultsMutex](size_t start, size_t end) {
+            std::vector<T*> localResults;
+            for (size_t i = start; i < end; ++i) {
                 if (arr[i] == key) {
-                    std::lock_guard<std::mutex> lock(resultsMutex);
-                    results.push_back(const_cast<T*>(&arr[i]));
-                    solutionFound.store(true);
-                    break;
+                    localResults.push_back(const_cast<T*>(&arr[i]));
                 }
             }
+            std::lock_guard<std::mutex> lock(resultsMutex);
+            results.insert(results.end(), localResults.begin(), localResults.end());
         };
 
         size_t start = 0;
