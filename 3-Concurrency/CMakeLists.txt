@@ -21,7 +21,6 @@ else()
 endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
-
 add_executable(CONCURRENCY src/main.cpp)
 
 set_target_properties(CONCURRENCY PROPERTIES CXX_CLANG_TIDY "${CMAKE_CXX_CLANG_TIDY}")

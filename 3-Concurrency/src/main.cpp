@@ -2,6 +2,7 @@
 #include <vector>
 
 #include "object_searcher.hpp"
+#include "synch_queue.hpp"
 
 int main() {
     std::vector<int> numbers = {1, 2, 2, 2, 5, 8, 7, 2, 8, 10};
@@ -10,8 +11,8 @@ int main() {
     SEARCHER::Finder<int> finder(numbers);
     SEARCHER::Finder<int> finder2(numbers2);
 
-    std::vector<int*> results = finder.findAll<10>(8);
-    std::vector<int*> results2 = finder2.findAll<10>(0);    
+    std::vector<int*> results = finder.findAll(8);
+    std::vector<int*> results2 = finder2.findAll(0);    
 
     for (const auto& res : results) {
         std::cout << *res << " ";

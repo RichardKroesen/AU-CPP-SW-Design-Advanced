@@ -4,6 +4,7 @@
 #include <vector>
 #include <algorithm>
 #include <thread>
+#include "synch_queue.hpp"
 
 namespace SEARCHER
 {
@@ -13,42 +14,51 @@ class Finder {
 public:
     Finder(const std::vector<T>& input) : arr(input) {}
 
-    template<uint8_t numThreads = 1>
-    std::vector<T*> findAll(const T& key) {
-        static_assert(numThreads > 0, "Number of threads must be greater than 0");
-        
-        std::vector<std::jthread> threads;
-        std::vector<std::vector<T*>> results(numThreads);
-        std::atomic<int> counter(0);
+    auto single_findAll(const T& key) {
+        std::vector<T*> results;
+        for (auto& elem : arr) {
+            if (elem == key) {
+                results.push_back(&elem);
+            }
+        }
+        return results;
+    }
 
-        auto worker = [&](int start, int end, int index) {
-            for (int i = start; i < end; ++i) {
+    template <size_t NumTasks = 4>
+    std::vector<T*> findAll(const T& key) {
+        std::vector<T*> results;
+        std::atomic<bool> solutionFound{false};
+        std::mutex resultsMutex;
+
+        std::vector<std::thread> threads;
+        threads.reserve(NumTasks);
+
+        size_t chunkSize = arr.size() / NumTasks;
+        size_t remainder = arr.size() % NumTasks;
+
+        auto searchTask = [this, &key, &results, &solutionFound, &resultsMutex](size_t start, size_t end) {
+            for (size_t i = start; i < end && !solutionFound.load(); ++i) {
                 if (arr[i] == key) {
-                    results[index].push_back(&arr[i]);
+                    std::lock_guard<std::mutex> lock(resultsMutex);
+                    results.push_back(const_cast<T*>(&arr[i]));
+                    solutionFound.store(true);
+                    break;
                 }
             }
-            counter++;
         };
 
-        const size_t segmentSize = arr.size() / numThreads;
-        for (int i = 0; i < numThreads; ++i) {
-            int start = i * segmentSize;
-            int end = (i == numThreads - 1) ? arr.size() : (i + 1) * segmentSize;
-            threads.emplace_back(worker, start, end, i);
+        size_t start = 0;
+        for (size_t i = 0; i < NumTasks; ++i) {
+            size_t end = start + chunkSize + (i < remainder ? 1 : 0);
+            threads.emplace_back(searchTask, start, end);
+            start = end;
         }
 
         for (auto& thread : threads) {
             thread.join();
         }
 
-        while (counter.load() < numThreads);
-
-        std::vector<T*> combinedResults;
-        for (const auto& res : results) {
-            combinedResults.insert(combinedResults.end(), res.begin(), res.end());
-        }
-
-        return combinedResults;
+        return results;
     }
 
 private:
