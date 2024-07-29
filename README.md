@@ -115,3 +115,7 @@ NoElementLessThanSevenInVector took 0.0401622 seconds.
 [==========] 4 tests from 1 test suite ran. (1400 ms total)
 [  PASSED  ] 4 tests.
 ```
+
+## Static Code Analysis
+
+Starting from assignment 3 (Concurrency) there is a static-code analysis tooling integrated. The Clang Tidy is used for this purpose because it is avalaible without any subscription. The tool is integrated using CMake configuration and .clang-tidy file. 
