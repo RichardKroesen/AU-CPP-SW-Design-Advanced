@@ -1,131 +1,106 @@
 #include <iostream>
-#include <vector>
-#include <list>
-#include <array>
-#include <algorithm>
-#include <ctime>
-#include <cstdlib>
-#include <iterator>
-#include <type_traits>
+#include <unordered_set>
+#include <random>
+#include <unordered_set>
+#include <set>
 
-template <typename Container, size_t N = 0>
-Container generateAndSort(size_t N_runtime) {
-    Container sequence;
-    std::srand(std::time(0)); // Seed for random number generation
+#include "./container.hpp"
+#include "./performance_measurer.hpp"
 
-    if constexpr (std::is_array_v<Container>) {
-        // For std::array, use the array's size
-        N = sequence.size();
+template <size_t count, int min = 1, int max = 100>
+std::vector<int> generateDistinctRandomInts() {
+    static_assert(!(count > static_cast<size_t>(max - min + 1)), "Only integer types are supported");
+
+    std::random_device rd;
+    std::mt19937 gen(rd());
+    std::uniform_int_distribution<> dis(min, max);
+
+    std::unordered_set<int> unique_nums;
+    while (unique_nums.size() < count) {
+        unique_nums.insert(dis(gen));
     }
 
-    // Generate N random integers
-    for (int i = 0; (i < N) || (i < N_runtime); ++i) {
-        auto element = std::rand() % 100;
-        if constexpr (std::is_same_v<Container, std::vector<int>> || std::is_same_v<Container, std::list<int>>) {
-            sequence.push_back(element);
-        } else if constexpr (std::is_same_v<Container, std::array<int, N>>) {
-            sequence[i] = element;
-        }
-
-        // Print the current sequence
-        if constexpr (std::is_same_v<Container, std::vector<int>> || std::is_same_v<Container, std::list<int>>) {
-            for (const auto& j : sequence) {
-                std::cout << j << " ";
-            }
-        } else if constexpr (std::is_same_v<Container, std::array<int, N>>) {
-            for (int j = 0; j <= i; ++j) {
-                std::cout << sequence[j] << " ";
-            }
-        }
-        std::cout << std::endl;
-    }
-
-    // Sort the sequence
-    if constexpr (std::is_same_v<Container, std::vector<int>> || (std::is_same_v<Container, std::array<int, N>>)) {
-        std::sort(sequence.begin(), sequence.end());
-    } else if constexpr (std::is_same_v<Container, std::list<int>>) {
-        sequence.sort();
-    }
-
-    return sequence;
-}
-
-template <typename Container>
-void removeElementsByUserInput(Container& sequence) {
-    while (!sequence.empty()) {
-        int position;
-        std::cout << "Enter the position to remove (0 to " << sequence.size() - 1 << "): ";
-        std::cin >> position;
-
-        if (position < 0 || position >= sequence.size()) {
-            std::cout << "Invalid position. Please try again." << std::endl;
-            continue;
-        }
-
-        if constexpr (std::is_same_v<Container, std::vector<int>> || std::is_same_v<Container, std::list<int>>) {
-            auto it = sequence.begin();
-            std::advance(it, position);
-            sequence.erase(it); // Remove the element at the specified position
-        } else if constexpr (std::is_array_v<Container>) {
-            // For std::array, shift elements to the left
-            for (size_t i = position; i < sequence.size() - 1; ++i) {
-                sequence[i] = sequence[i + 1];
-            }
-            sequence[sequence.size() - 1] = 0; // Set the last element to 0
-        }
-
-        if constexpr (std::is_same_v<Container, std::vector<int>> || std::is_same_v<Container, std::list<int>>) {
-            if (sequence.empty()) {
-                std::cout << "Sequence is now empty." << std::endl;
-                break;
-            }
-        } else if constexpr (std::is_array_v<Container>) {
-            if (position == sequence.size() - 1) {
-                std::cout << "All elements have been processed." << std::endl;
-                break;
-            }
-        }
-
-        std::cout << "Current sequence: ";
-        for (const auto& num : sequence) {
-            std::cout << num << " ";
-        }
-        std::cout << std::endl;
-    }
+    return std::vector<int>(unique_nums.begin(), unique_nums.end());
 }
 
 int main() {
-    int N;
-    std::cout << "Enter the number of random integers to generate: ";
-    std::cin >> N;
+    const size_t N = 100; 
+    auto random_nums = generateDistinctRandomInts<N, 1, N+1>();
 
-    // Using std::vector
-    std::vector<int> vectorSequence = generateAndSort<std::vector<int>>(N);
-    std::cout << "Initial sorted vector sequence: ";
-    for (const int& num : vectorSequence) {
-        std::cout << num << " ";
-    }
+    std::vector<int> vec; 
+    BENCHMARK_TOOL::PerformanceMeasurer::measure("VECTOR", [&vec, &random_nums]() {
+        for (size_t i = 0; i < N; ++i) {
+            vec.push_back(random_nums[i]);
+            MEMORY::sort(vec);
+            // MEMORY::print(vec);
+        }
+    });
+    BENCHMARK_TOOL::PerformanceMeasurer::measure("VECTOR-DEL", [&vec, &random_nums]() {
+        for (size_t i = 0; i < N; ++i) {
+            vec.erase(std::remove(vec.begin(), vec.end(), random_nums[i]), vec.end());
+        }
+    });
+    // MEMORY::print(vec);
     std::cout << std::endl;
-    // removeElementsByUserInput(vectorSequence);
 
-    // Using std::list
-    std::list<int> listSequence = generateAndSort<std::list<int>>(N);
-    std::cout << "Initial sorted list sequence: ";
-    for (const int& num : listSequence) {
-        std::cout << num << " ";
-    }
+    std::vector<int> vecAl; 
+    vecAl.reserve(N);
+    BENCHMARK_TOOL::PerformanceMeasurer::measure("VECTOR_AL", [&vecAl, &random_nums]() {
+        for (size_t i = 0; i < N; ++i) {
+            vecAl.push_back(random_nums[i]);
+            MEMORY::sort(vecAl);
+            // MEMORY::print(vecAl);
+        }
+    });
+    BENCHMARK_TOOL::PerformanceMeasurer::measure("VECTOR_AL-DEL", [&vecAl, &random_nums]() {
+        for (size_t i = 0; i < N; ++i) {
+            vecAl.erase(std::remove(vecAl.begin(), vecAl.end(), random_nums[i]), vecAl.end());
+        }
+    });
+    // MEMORY::print(vecAl);
     std::cout << std::endl;
-    // removeElementsByUserInput(listSequence);
 
-    // Using std::array (with fixed size 10)
-    constexpr size_t arraySize = 10;
-    std::array<int, arraySize> arraySequence = generateAndSort<std::array<int, arraySize>, arraySize>(N);
-    std::cout << "Initial sorted array sequence: ";
-    for (const int& num : arraySequence) {
-        std::cout << num << " ";
-    }
+    std::list<int> lst;
+    BENCHMARK_TOOL::PerformanceMeasurer::measure("LIST", [&lst, &random_nums]() {
+        for (size_t i = 0; i < N; ++i) {
+            lst.push_back(random_nums[i]);
+            MEMORY::sort(lst);
+            // MEMORY::print(lst);
+        }
+    });
+    BENCHMARK_TOOL::PerformanceMeasurer::measure("LIST-DEL", [&lst, &random_nums]() {
+        for (size_t i = 0; i < N; ++i) {
+            lst.remove(random_nums[i]);
+        }
+    });
+    // MEMORY::print(lst);
     std::cout << std::endl;
-    // removeElementsByUserInput(arraySequence);
 
+    std::array<int, N> arr;
+    BENCHMARK_TOOL::PerformanceMeasurer::measure("ARRAY", [&arr, &random_nums]() {
+        for (size_t i = 0; i < N; ++i) {
+            arr[i] = random_nums[i];
+            MEMORY::sort(arr);
+        }
+    });
+    BENCHMARK_TOOL::PerformanceMeasurer::measure("ARRAY-DEL", [&arr, &random_nums]() {
+        for (size_t i = 0; i < N; ++i) {
+            arr[random_nums[i]] = 0;
+        }
+    }); 
+    std::cout << std::endl;
+
+    std::set<int> st;    
+    BENCHMARK_TOOL::PerformanceMeasurer::measure("SET", [&st, &random_nums]() {
+        for (size_t i = 0; i < N; ++i) {
+            st.insert(random_nums[i]);
+        }
+    });
+    BENCHMARK_TOOL::PerformanceMeasurer::measure("SET-DEL", [&st, &random_nums]() {
+        for (size_t i = 0; i < N; ++i) {
+            st.erase(random_nums[i]);
+        }
+    });
+    std::cout << std::endl;
     return 0;
 }
