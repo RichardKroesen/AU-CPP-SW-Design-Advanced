@@ -45,10 +45,15 @@ int main() {
         }
         std::cout << std::endl;
 
+        MATRIX::Matrix<std::string> matrix4(3, 6);
+        matrix4(0, 0) = "HE";
+        matrix4(1, 2) = "LL";
+        matrix4(2, 4) = "O";
+        matrix4.print();
+
         MATRIX::Matrix<MATRIX::Chess_piece> chess_board(8, 8);
         chess_board(0, 0) = MATRIX::Chess_piece(MATRIX::Type::Rook);
         chess_board(0, 1) = MATRIX::Chess_piece(MATRIX::Type::Knight);
-
         chess_board.print();
 
     }
