@@ -1,13 +1,12 @@
 #ifndef CHESS_PIECE_HPP
 #define CHESS_PIECE_HPP
 
-#include "./generalized_matrix.hpp"
-
 namespace MATRIX {
+
+enum class Type { King, Queen, Rook, Bishop, Knight, Pawn };
 
 class Chess_piece {
 public:
-    enum class Type { King, Queen, Rook, Bishop, Knight, Pawn };
     Chess_piece(Type type = Type::Pawn) : type(type) {}
 
     friend std::ostream& operator<<(std::ostream& os, const Chess_piece& piece) {

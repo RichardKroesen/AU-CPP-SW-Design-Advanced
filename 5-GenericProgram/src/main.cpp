@@ -46,8 +46,8 @@ int main() {
         std::cout << std::endl;
 
         MATRIX::Matrix<MATRIX::Chess_piece> chess_board(8, 8);
-        chess_board(0, 0) = MATRIX::Chess_piece(MATRIX::Chess_piece::Type::Rook);
-        chess_board(0, 1) = MATRIX::Chess_piece(MATRIX::Chess_piece::Type::Knight);
+        chess_board(0, 0) = MATRIX::Chess_piece(MATRIX::Type::Rook);
+        chess_board(0, 1) = MATRIX::Chess_piece(MATRIX::Type::Knight);
 
         chess_board.print();
 

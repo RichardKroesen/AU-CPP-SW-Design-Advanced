@@ -24,16 +24,6 @@ concept Modulo = requires(T a, T b) {
 
 template <typename T>
 class Matrix {
-private:
-    size_t rows, cols;
-    std::vector<std::vector<T>> data;
-
-    void check_bounds(size_t x, size_t y) const {
-        if (x >= rows || y >= cols) {
-            throw std::out_of_range("Index out of range");
-        }
-    }
-
 public:
     Matrix(size_t rows, size_t cols) : rows(rows), cols(cols), data(rows, std::vector<T>(cols, T{})) {}
 
@@ -204,6 +194,16 @@ public:
                 std::cout << element << " ";
             }
             std::cout << std::endl;
+        }
+    }
+
+private:
+    size_t rows, cols;
+    std::vector<std::vector<T>> data;
+
+    void check_bounds(size_t x, size_t y) const {
+        if (x >= rows || y >= cols) {
+            throw std::out_of_range("Index out of range");
         }
     }
 }; // class Matrix
