@@ -21,7 +21,7 @@ endif()
 # endif()
 
 include_directories(${CMAKE_SOURCE_DIR}/src)
-add_executable(CONTAINERS src/main.cpp)
+add_executable(CONTAINERS src/main_structs.cpp)
 
 # set_target_properties(CONTAINERS PROPERTIES CXX_CLANG_TIDY "${CMAKE_CXX_CLANG_TIDY}")
 add_subdirectory(tests)

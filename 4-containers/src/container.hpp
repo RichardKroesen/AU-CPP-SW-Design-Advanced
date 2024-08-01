@@ -11,21 +11,40 @@
 #include <type_traits>
 #include <concepts>
 #include <iostream>
+#include <unordered_set>
+#include <string>
+
+struct MyStruct {
+    int value;
+    int large_array[100]; 
+
+    bool operator<(const MyStruct& other) const {
+        return value < other.value;
+    }
+
+    bool operator==(const MyStruct& other) const {
+        return value == other.value;
+    }
+};
 
 namespace MEMORY
 {
 
 // Concept for containers that store integers
 template<typename T>
-concept SortableIntContainer = requires(T container) {
+concept SortableContainer = requires(T container) {
     typename T::value_type;
-    requires std::is_same_v<typename T::value_type, int>;
+    requires std::is_same_v<typename T::value_type, int> || 
+             std::is_same_v<typename T::value_type, MyStruct>;
     { container.begin() } -> std::same_as<typename T::iterator>;
     { container.end() } -> std::same_as<typename T::iterator>;
     { container.size() } -> std::convertible_to<size_t>;
+    requires requires(typename T::value_type a, typename T::value_type b) {
+        { a < b } -> std::convertible_to<bool>;
+    };
 };
 
-template <SortableIntContainer Container>
+template <SortableContainer Container>
 void print(Container& sequence) {
     std::cout << "Container: ";
     for (const auto& num : sequence) {
@@ -34,7 +53,7 @@ void print(Container& sequence) {
     std::cout << std::endl;
 }
 
-template <SortableIntContainer Container>
+template <SortableContainer Container>
 void sort(Container& sequence) {
 
     if constexpr (std::is_same_v<Container, std::set<int>>) {
@@ -51,7 +70,7 @@ void sort(Container& sequence) {
     }
 }
 
-template <SortableIntContainer Container>
+template <SortableContainer Container>
 void removeAllElements(Container& sequence) {
     if constexpr (std::is_same_v<Container, std::vector<int>> || 
                   std::is_same_v<Container, std::list<int>> ||
